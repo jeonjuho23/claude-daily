@@ -24,6 +24,86 @@ mypy .                          # Type checking
 python main.py                  # Start the bot
 ```
 
+## Setup & Run (Quick Start)
+
+### Prerequisites
+
+- Python 3.11+
+- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`, 인증 완료 상태)
+- Slack App (Bot Token + App Token + Signing Secret)
+- Notion Integration (API Key + Database ID)
+
+### 1. 의존성 설치
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. 환경 변수 설정
+
+`.env` 파일이 이미 있으면 건너뛰기. 없으면:
+
+```bash
+cp .env.example .env
+# .env 파일을 열어서 실제 값 입력
+```
+
+필수 키:
+- `SLACK_BOT_TOKEN` - `xoxb-` 로 시작하는 봇 토큰
+- `SLACK_SIGNING_SECRET` - Slack App의 Signing Secret
+- `SLACK_APP_TOKEN` - `xapp-` 로 시작하는 App-Level Token (Socket Mode용)
+- `SLACK_CHANNEL_ID` - 발행 대상 채널 ID
+- `NOTION_API_KEY` - `secret_` 로 시작하는 Notion Integration 토큰
+- `NOTION_DATABASE_ID` - Notion 데이터베이스 ID
+
+스케줄 설정 (선택):
+- `DEFAULT_SCHEDULE_TIME=07:00` - 매일 실행 시각 (기본 07:00)
+- `TIMEZONE=Asia/Seoul` - 타임존 (기본 Asia/Seoul)
+
+### 3. 실행
+
+```bash
+python main.py
+```
+
+이 프로세스는 **상시 실행(데몬)** 형태. APScheduler가 설정 시간에 자동으로 콘텐츠 생성/발행. Ctrl+C로 종료.
+
+### 4. 백그라운드 실행 (터미널 꺼도 유지)
+
+**Windows (PowerShell):**
+```powershell
+Start-Process python -ArgumentList "main.py" -WorkingDirectory "C:\path\to\daily-bot" -WindowStyle Hidden
+```
+
+**Linux (systemd):**
+```bash
+# /etc/systemd/system/daily-bot.service
+[Unit]
+Description=Daily-Bot CS Knowledge Sharing
+After=network.target
+
+[Service]
+Type=simple
+User=your-user
+WorkingDirectory=/path/to/daily-bot
+ExecStart=/path/to/venv/bin/python main.py
+Restart=always
+RestartSec=10
+Environment=PYTHONIOENCODING=utf-8
+
+[Install]
+WantedBy=multi-user.target
+```
+```bash
+sudo systemctl enable daily-bot && sudo systemctl start daily-bot
+```
+
+### 5. 동작 확인
+
+- 로그: `logs/` 디렉토리에 자동 생성
+- Slack에서 `/daily-bot status` 명령으로 상태 확인
+- `/daily-bot now` 로 즉시 실행 테스트
+
 ## Architecture
 
 ```

@@ -135,6 +135,15 @@ scripts\install_task.bat
 ./scripts/install_launchd.sh
 ```
 
+#### Linux (systemd)
+
+```bash
+chmod +x scripts/*.sh
+./scripts/setup_linux.sh
+# Edit .env with your settings
+./scripts/install_systemd.sh
+```
+
 ## 📖 사용 방법
 
 ### 수동 실행
