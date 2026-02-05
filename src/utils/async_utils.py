@@ -4,7 +4,7 @@ Provides safe background task creation with exception handling
 """
 
 import asyncio
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from src.utils.logger import get_logger
 
@@ -15,7 +15,7 @@ def create_background_task(
     coro,
     *,
     context: str = "",
-    on_error: Optional[Callable[[Exception], None]] = None,
+    on_error: Callable[[Exception], None] | None = None,
 ) -> asyncio.Task:
     """
     Create asyncio task with automatic exception handling
@@ -38,7 +38,7 @@ def create_background_task(
                 if on_error:
                     on_error(exc)
         except asyncio.CancelledError:
-            pass
+            logger.debug(f"Background task cancelled: {context}")
 
     task.add_done_callback(handle_exception)
     return task

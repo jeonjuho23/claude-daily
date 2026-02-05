@@ -3,9 +3,8 @@ DateTime utilities for Daily-Bot
 Handles timezone-aware datetime operations
 """
 
-from datetime import datetime, timedelta, time
-from typing import Optional, Tuple
 import zoneinfo
+from datetime import datetime, time, timedelta
 
 from config.settings import settings
 
@@ -28,13 +27,13 @@ def today() -> datetime:
 def parse_time(time_str: str) -> time:
     """
     Parse time string (HH:MM) to time object
-    
+
     Args:
         time_str: Time in HH:MM format
-        
+
     Returns:
         time object
-        
+
     Raises:
         ValueError: If format is invalid
     """
@@ -50,10 +49,10 @@ def parse_time(time_str: str) -> time:
 def format_time(t: time) -> str:
     """
     Format time object to HH:MM string
-    
+
     Args:
         t: time object
-        
+
     Returns:
         Formatted time string
     """
@@ -63,11 +62,11 @@ def format_time(t: time) -> str:
 def format_datetime(dt: datetime, include_time: bool = True) -> str:
     """
     Format datetime for display
-    
+
     Args:
         dt: datetime object
         include_time: Whether to include time
-        
+
     Returns:
         Formatted datetime string
     """
@@ -79,57 +78,57 @@ def format_datetime(dt: datetime, include_time: bool = True) -> str:
 def get_next_run_time(schedule_time: str) -> datetime:
     """
     Calculate next run time for a schedule
-    
+
     Args:
         schedule_time: Schedule time in HH:MM format
-        
+
     Returns:
         Next run datetime
     """
     t = parse_time(schedule_time)
-    tz = get_timezone()
+    get_timezone()
     current = now()
-    
+
     next_run = current.replace(
         hour=t.hour,
         minute=t.minute,
         second=0,
         microsecond=0,
     )
-    
+
     # If time has passed today, schedule for tomorrow
     if next_run <= current:
         next_run += timedelta(days=1)
-    
+
     return next_run
 
 
-def get_week_range(reference_date: Optional[datetime] = None) -> Tuple[datetime, datetime]:
+def get_week_range(reference_date: datetime | None = None) -> tuple[datetime, datetime]:
     """
     Get start and end of the week containing the reference date
-    
+
     Args:
         reference_date: Reference date (defaults to now)
-        
+
     Returns:
         Tuple of (week_start, week_end)
     """
     ref = reference_date or now()
-    
+
     # Start of week (Monday)
     week_start = ref - timedelta(days=ref.weekday())
     week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
-    
+
     # End of week (Sunday 23:59:59)
     week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
-    
+
     return week_start, week_end
 
 
-def get_last_week_range() -> Tuple[datetime, datetime]:
+def get_last_week_range() -> tuple[datetime, datetime]:
     """
     Get start and end of last week
-    
+
     Returns:
         Tuple of (week_start, week_end)
     """
@@ -137,35 +136,35 @@ def get_last_week_range() -> Tuple[datetime, datetime]:
     return get_week_range(ref)
 
 
-def get_month_range(reference_date: Optional[datetime] = None) -> Tuple[datetime, datetime]:
+def get_month_range(reference_date: datetime | None = None) -> tuple[datetime, datetime]:
     """
     Get start and end of the month containing the reference date
-    
+
     Args:
         reference_date: Reference date (defaults to now)
-        
+
     Returns:
         Tuple of (month_start, month_end)
     """
     ref = reference_date or now()
-    
+
     # Start of month
     month_start = ref.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
+
     # End of month
     if ref.month == 12:
         next_month = ref.replace(year=ref.year + 1, month=1, day=1)
     else:
         next_month = ref.replace(month=ref.month + 1, day=1)
     month_end = next_month - timedelta(seconds=1)
-    
+
     return month_start, month_end
 
 
-def get_last_month_range() -> Tuple[datetime, datetime]:
+def get_last_month_range() -> tuple[datetime, datetime]:
     """
     Get start and end of last month
-    
+
     Returns:
         Tuple of (month_start, month_end)
     """
@@ -177,14 +176,14 @@ def get_last_month_range() -> Tuple[datetime, datetime]:
     return get_month_range(ref)
 
 
-def is_weekday(day: int, reference_date: Optional[datetime] = None) -> bool:
+def is_weekday(day: int, reference_date: datetime | None = None) -> bool:
     """
     Check if reference date matches the specified weekday
-    
+
     Args:
         day: Day of week (0=Monday, 6=Sunday)
         reference_date: Reference date (defaults to now)
-        
+
     Returns:
         True if matches
     """
@@ -192,14 +191,14 @@ def is_weekday(day: int, reference_date: Optional[datetime] = None) -> bool:
     return ref.weekday() == day
 
 
-def is_month_day(day: int, reference_date: Optional[datetime] = None) -> bool:
+def is_month_day(day: int, reference_date: datetime | None = None) -> bool:
     """
     Check if reference date matches the specified day of month
-    
+
     Args:
         day: Day of month (1-31)
         reference_date: Reference date (defaults to now)
-        
+
     Returns:
         True if matches
     """
@@ -211,11 +210,11 @@ def get_retry_time(attempt: int, base_interval: int = 5) -> datetime:
     """
     Calculate next retry time based on attempt number
     Progressive intervals: 5, 10, 15, 20, 25 minutes
-    
+
     Args:
         attempt: Current attempt number (1-based)
         base_interval: Base interval in minutes
-        
+
     Returns:
         Next retry datetime
     """
@@ -226,15 +225,15 @@ def get_retry_time(attempt: int, base_interval: int = 5) -> datetime:
 def humanize_timedelta(td: timedelta) -> str:
     """
     Convert timedelta to human-readable string
-    
+
     Args:
         td: timedelta object
-        
+
     Returns:
         Human-readable string
     """
     total_seconds = int(td.total_seconds())
-    
+
     if total_seconds < 60:
         return f"{total_seconds}초"
     elif total_seconds < 3600:
