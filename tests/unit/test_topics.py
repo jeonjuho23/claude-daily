@@ -2,14 +2,12 @@
 Unit tests for config/topics.py
 """
 
-import pytest
-
 from config.topics import (
     CATEGORIES,
     TOPICS,
     get_all_topics,
-    get_topics_by_category,
     get_category_name,
+    get_topics_by_category,
     get_total_topic_count,
     infer_category_from_topic,
 )

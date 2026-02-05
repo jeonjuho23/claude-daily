@@ -3,9 +3,6 @@ Unit tests for config/settings.py
 """
 
 import pytest
-from unittest.mock import patch
-from functools import lru_cache
-
 from pydantic import ValidationError
 
 
@@ -14,10 +11,9 @@ class TestSettingsValidators:
 
     def test_valid_time_format(self, mock_settings):
         """Valid time format should pass"""
-        from config.settings import Settings
-
         # Clear lru_cache
-        from config.settings import get_settings
+        from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         settings = Settings()
@@ -26,6 +22,7 @@ class TestSettingsValidators:
     def test_invalid_time_format_raises(self, mock_settings, monkeypatch):
         """Invalid time format should raise ValidationError"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         monkeypatch.setenv("DEFAULT_SCHEDULE_TIME", "25:00")
@@ -36,6 +33,7 @@ class TestSettingsValidators:
     def test_invalid_time_format_no_colon(self, mock_settings, monkeypatch):
         """Time without colon should raise ValidationError"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         monkeypatch.setenv("DEFAULT_SCHEDULE_TIME", "0700")
@@ -46,6 +44,7 @@ class TestSettingsValidators:
     def test_valid_weekday(self, mock_settings):
         """Valid weekday (0-6) should pass"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         settings = Settings()
@@ -54,6 +53,7 @@ class TestSettingsValidators:
     def test_invalid_weekday_raises(self, mock_settings, monkeypatch):
         """Invalid weekday should raise ValidationError"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         monkeypatch.setenv("WEEKLY_REPORT_DAY", "7")
@@ -64,6 +64,7 @@ class TestSettingsValidators:
     def test_valid_monthday(self, mock_settings):
         """Valid month day (1-28) should pass"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         settings = Settings()
@@ -72,6 +73,7 @@ class TestSettingsValidators:
     def test_invalid_monthday_raises(self, mock_settings, monkeypatch):
         """Invalid month day should raise ValidationError"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         monkeypatch.setenv("MONTHLY_REPORT_DAY", "29")
@@ -86,6 +88,7 @@ class TestSettingsProperties:
     def test_report_channel_uses_report_channel_id(self, mock_settings, monkeypatch):
         """report_channel should use slack_report_channel_id if set"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         monkeypatch.setenv("SLACK_REPORT_CHANNEL_ID", "C_REPORT_123")
@@ -96,6 +99,7 @@ class TestSettingsProperties:
     def test_report_channel_fallback_to_main(self, mock_settings):
         """report_channel should fallback to main channel if report not set"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         settings = Settings()
@@ -118,6 +122,7 @@ class TestLazySettings:
     def test_lazy_settings_getattr(self, mock_settings):
         """_LazySettings should proxy attribute access"""
         from config.settings import _LazySettings, get_settings
+
         get_settings.cache_clear()
 
         lazy = _LazySettings()
@@ -127,6 +132,7 @@ class TestLazySettings:
     def test_lazy_settings_setattr(self, mock_settings):
         """_LazySettings should proxy attribute setting"""
         from config.settings import _LazySettings, get_settings
+
         get_settings.cache_clear()
 
         lazy = _LazySettings()
@@ -143,7 +149,8 @@ class TestGetSettings:
 
     def test_returns_settings_instance(self, mock_settings):
         """get_settings should return Settings instance"""
-        from config.settings import get_settings, Settings
+        from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         settings = get_settings()
@@ -152,6 +159,7 @@ class TestGetSettings:
     def test_caching_returns_same_instance(self, mock_settings):
         """get_settings should return cached instance"""
         from config.settings import get_settings
+
         get_settings.cache_clear()
 
         settings1 = get_settings()
@@ -165,6 +173,7 @@ class TestSettingsDefaults:
     def test_default_values(self, mock_settings):
         """Verify default values are set correctly"""
         from config.settings import Settings, get_settings
+
         get_settings.cache_clear()
 
         settings = Settings()

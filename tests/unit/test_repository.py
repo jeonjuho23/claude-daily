@@ -2,26 +2,25 @@
 Unit tests for src/storage/sqlite_repository.py
 """
 
-import pytest
-import asyncio
-import tempfile
 import os
-from datetime import datetime, timedelta
+import tempfile
+from datetime import datetime
 
-from src.storage.sqlite_repository import SQLiteRepository
-from src.domain.models import (
-    ContentRecord,
-    Schedule,
-    ExecutionLog,
-    TopicRequest,
-)
+import pytest
+
 from src.domain.enums import (
     Category,
     Difficulty,
     ExecutionStatus,
     ScheduleStatus,
-    ContentStatus,
 )
+from src.domain.models import (
+    ContentRecord,
+    ExecutionLog,
+    Schedule,
+    TopicRequest,
+)
+from src.storage.sqlite_repository import SQLiteRepository
 
 
 @pytest.fixture
@@ -53,9 +52,7 @@ class TestSQLiteRepositoryInitialization:
 
         # Verify tables exist by querying them
         conn = await repo._get_connection()
-        cursor = await conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        )
+        cursor = await conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = {row["name"] for row in await cursor.fetchall()}
 
         assert "content_records" in tables

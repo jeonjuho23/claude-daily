@@ -2,9 +2,10 @@
 Unit tests for src/utils/async_utils.py
 """
 
-import pytest
 import asyncio
 from unittest.mock import Mock, patch
+
+import pytest
 
 from src.utils.async_utils import create_background_task
 
@@ -15,6 +16,7 @@ class TestCreateBackgroundTask:
     @pytest.mark.asyncio
     async def test_creates_task(self):
         """Should create an asyncio.Task"""
+
         async def sample_coro():
             return "done"
 
@@ -42,6 +44,7 @@ class TestCreateBackgroundTask:
     @pytest.mark.asyncio
     async def test_logs_error_on_exception(self):
         """Should log error when task raises exception"""
+
         async def failing_coro():
             raise ValueError("Test error")
 
@@ -84,6 +87,7 @@ class TestCreateBackgroundTask:
     @pytest.mark.asyncio
     async def test_handles_cancelled_task(self):
         """Should handle cancelled tasks gracefully"""
+
         async def slow_coro():
             await asyncio.sleep(10)
 
@@ -101,6 +105,7 @@ class TestCreateBackgroundTask:
     @pytest.mark.asyncio
     async def test_context_parameter_optional(self):
         """Context parameter should be optional"""
+
         async def sample_coro():
             return "done"
 
@@ -112,6 +117,7 @@ class TestCreateBackgroundTask:
     @pytest.mark.asyncio
     async def test_on_error_parameter_optional(self):
         """on_error parameter should be optional"""
+
         async def failing_coro():
             raise ValueError("Test")
 
@@ -124,6 +130,7 @@ class TestCreateBackgroundTask:
     @pytest.mark.asyncio
     async def test_preserves_return_value(self):
         """Should preserve coroutine return value"""
+
         async def sample_coro():
             return {"key": "value", "count": 42}
 
