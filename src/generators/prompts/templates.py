@@ -89,18 +89,18 @@ def get_generation_prompt(
 ) -> str:
     """
     Get the appropriate prompt template with values filled in
-    
+
     Args:
         topic: Topic to generate content for
         category: Content category
         difficulty: Difficulty level
         language: Language (ko or en)
-        
+
     Returns:
         Formatted prompt string
     """
     template = CONTENT_GENERATION_PROMPT_KO if language == "ko" else CONTENT_GENERATION_PROMPT_EN
-    
+
     return template.format(
         topic=topic,
         category=category,

@@ -6,14 +6,13 @@ import asyncio
 import json
 import random
 import re
-from typing import List, Optional
 
+from config.topics import TOPICS, get_category_name
+from src.domain.enums import Category, Difficulty
+from src.domain.models import GeneratedContent
 from src.generators.base import ContentGenerator, GenerationError
 from src.generators.prompts import get_generation_prompt
-from src.domain.models import GeneratedContent
-from src.domain.enums import Category, Difficulty
 from src.utils.logger import get_logger
-from config.topics import TOPICS, CATEGORIES, get_category_name
 
 logger = get_logger(__name__)
 
@@ -21,11 +20,11 @@ logger = get_logger(__name__)
 class ClaudeCodeGenerator(ContentGenerator):
     """
     Content generator using Claude Code CLI
-    
+
     Executes claude code CLI commands to generate content.
     Requires Claude Code CLI to be installed and authenticated.
     """
-    
+
     def __init__(
         self,
         timeout: int = 120,
@@ -33,14 +32,14 @@ class ClaudeCodeGenerator(ContentGenerator):
     ):
         """
         Initialize Claude Code generator
-        
+
         Args:
             timeout: Command execution timeout in seconds
             model: Claude model to use
         """
         self.timeout = max(timeout, 180)
         self.model = model
-    
+
     async def generate(
         self,
         topic: str,
@@ -57,16 +56,15 @@ class ClaudeCodeGenerator(ContentGenerator):
             category=category.value,
             difficulty=difficulty.value,
         )
-        
+
         # Get category display name
         category_name = get_category_name(
-            category.value if isinstance(category, Category) else category,
-            language
+            category.value if isinstance(category, Category) else category, language
         )
-        
+
         # Get difficulty display name
         difficulty_name = difficulty.korean if language == "ko" else difficulty.value
-        
+
         # Build prompt
         prompt = get_generation_prompt(
             topic=topic,
@@ -74,21 +72,21 @@ class ClaudeCodeGenerator(ContentGenerator):
             difficulty=difficulty_name,
             language=language,
         )
-        
+
         try:
             # Execute Claude Code CLI
             result = await self._execute_claude_code(prompt)
-            
+
             # Parse the response
             content = self._parse_response(result, topic, category, difficulty)
-            
+
             logger.info(
                 "Content generated successfully",
                 title=content.title,
             )
-            
+
             return content
-            
+
         except Exception as e:
             logger.error(
                 "Content generation failed",
@@ -96,18 +94,18 @@ class ClaudeCodeGenerator(ContentGenerator):
                 error=str(e),
             )
             raise GenerationError(f"Failed to generate content: {e}", e)
-    
+
     async def generate_random(
         self,
-        used_topics: Optional[List[str]] = None,
-        preferred_category: Optional[Category] = None,
+        used_topics: list[str] | None = None,
+        preferred_category: Category | None = None,
         language: str = "ko",
     ) -> GeneratedContent:
         """
         Generate content for a random unused topic
         """
         used_topics = used_topics or []
-        
+
         # Select category
         if preferred_category:
             category = preferred_category
@@ -118,20 +116,17 @@ class ClaudeCodeGenerator(ContentGenerator):
                 available = [t for t in topics if t not in used_topics]
                 if available:
                     available_categories.extend([cat] * len(available))
-            
+
             if not available_categories:
                 raise GenerationError("All topics have been used")
-            
+
             category_str = random.choice(available_categories)
             category = Category(category_str)
-        
+
         # Select topic from category
         category_str = category.value if isinstance(category, Category) else category
-        available_topics = [
-            t for t in TOPICS.get(category_str, [])
-            if t not in used_topics
-        ]
-        
+        available_topics = [t for t in TOPICS.get(category_str, []) if t not in used_topics]
+
         if not available_topics:
             # Try other categories
             for cat, topics in TOPICS.items():
@@ -140,52 +135,53 @@ class ClaudeCodeGenerator(ContentGenerator):
                     category = Category(cat)
                     available_topics = available
                     break
-        
+
         if not available_topics:
             raise GenerationError("No available topics")
-        
+
         topic = random.choice(available_topics)
-        
+
         # Random difficulty with weights (more intermediate)
         difficulties = [Difficulty.BEGINNER, Difficulty.INTERMEDIATE, Difficulty.ADVANCED]
         weights = [0.25, 0.5, 0.25]
         difficulty = random.choices(difficulties, weights=weights)[0]
-        
+
         logger.info(
             "Selected random topic",
             topic=topic,
             category=category.value,
             difficulty=difficulty.value,
         )
-        
+
         return await self.generate(
             topic=topic,
             category=category,
             difficulty=difficulty,
             language=language,
         )
-    
+
     async def health_check(self) -> bool:
         """
         Check if Claude Code CLI is available
         """
         try:
             process = await asyncio.create_subprocess_exec(
-                "claude", "--version",
+                "claude",
+                "--version",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-            stdout, stderr = await asyncio.wait_for(
+            _stdout, _stderr = await asyncio.wait_for(
                 process.communicate(),
                 timeout=10,
             )
-            
+
             return process.returncode == 0
-            
+
         except Exception as e:
             logger.warning("Claude Code health check failed", error=str(e))
             return False
-    
+
     async def _execute_claude_code(self, prompt: str) -> str:
         """
         Execute Claude Code CLI with the given prompt
@@ -204,8 +200,10 @@ class ClaudeCodeGenerator(ContentGenerator):
         cmd = [
             "claude",
             "--print",
-            "--model", self.model,
-            "-p", "-",
+            "--model",
+            self.model,
+            "-p",
+            "-",
         ]
 
         try:
@@ -217,23 +215,23 @@ class ClaudeCodeGenerator(ContentGenerator):
             )
 
             stdout, stderr = await asyncio.wait_for(
-                process.communicate(input=prompt.encode('utf-8')),
+                process.communicate(input=prompt.encode("utf-8")),
                 timeout=self.timeout,
             )
-            
+
             if process.returncode != 0:
                 error_msg = stderr.decode() if stderr else "Unknown error"
                 raise GenerationError(f"Claude Code CLI failed: {error_msg}")
-            
+
             return stdout.decode()
-            
-        except asyncio.TimeoutError:
+
+        except TimeoutError:
             raise GenerationError(f"Claude Code CLI timed out after {self.timeout}s")
         except FileNotFoundError:
             raise GenerationError(
                 "Claude Code CLI not found. Please install it: npm install -g @anthropic-ai/claude-code"
             )
-    
+
     def _parse_response(
         self,
         response: str,
@@ -246,17 +244,21 @@ class ClaudeCodeGenerator(ContentGenerator):
         """
         try:
             # Try to extract JSON from response
-            json_match = re.search(r'```json\s*([\s\S]*?)\s*```', response)
+            json_match = re.search(r"```json\s*([\s\S]*?)\s*```", response)
             if json_match:
-                json_str = json_match.group(1)
+                data = json.loads(json_match.group(1))
             else:
-                json_match = re.search(r'\{[\s\S]*\}', response)
-                if json_match:
-                    json_str = json_match.group(0)
-                else:
+                # Try each '{' position with raw_decode (tolerates trailing text)
+                decoder = json.JSONDecoder()
+                data = None
+                for m in re.finditer(r"\{", response):
+                    try:
+                        data, _ = decoder.raw_decode(response, m.start())
+                        break
+                    except json.JSONDecodeError:
+                        continue
+                if data is None:
                     raise GenerationError("No JSON found in response")
-
-            data = json.loads(json_str)
 
             if "title" not in data or "summary" not in data:
                 raise GenerationError("Missing required field: title or summary")
