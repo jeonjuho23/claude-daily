@@ -1,0 +1,18 @@
+[Unit]
+Description=Daily-Bot - Automated CS Knowledge Sharing Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=PLACEHOLDER_USER
+WorkingDirectory=PLACEHOLDER_DIR
+ExecStart=PLACEHOLDER_DIR/venv/bin/python main.py
+EnvironmentFile=PLACEHOLDER_DIR/.env
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

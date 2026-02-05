@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install black ruff
+      - run: black --check .
+      - run: ruff check .
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: pip install mypy
+      - run: mypy .
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements.txt
+      - run: pytest -v --cov=src --cov=config --cov-report=xml
+        env:
+          SLACK_BOT_TOKEN: xoxb-test
+          SLACK_SIGNING_SECRET: test-secret
+          SLACK_APP_TOKEN: xapp-test
+          SLACK_CHANNEL_ID: C12345678
+          NOTION_API_KEY: secret_test
+          NOTION_DATABASE_ID: test-db-id
