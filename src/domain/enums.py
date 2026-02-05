@@ -2,11 +2,12 @@
 Domain Enumerations for Daily-Bot
 """
 
-from enum import Enum, auto
+from enum import Enum
 
 
 class Category(str, Enum):
     """CS Content Categories"""
+
     NETWORK = "network"
     OS = "os"
     ALGORITHM = "algorithm"
@@ -23,10 +24,11 @@ class Category(str, Enum):
 
 class Difficulty(str, Enum):
     """Content Difficulty Levels"""
+
     BEGINNER = "beginner"
     INTERMEDIATE = "intermediate"
     ADVANCED = "advanced"
-    
+
     @property
     def korean(self) -> str:
         """Get Korean display name"""
@@ -40,6 +42,7 @@ class Difficulty(str, Enum):
 
 class ExecutionStatus(str, Enum):
     """Execution Status"""
+
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
@@ -50,6 +53,7 @@ class ExecutionStatus(str, Enum):
 
 class ScheduleStatus(str, Enum):
     """Schedule Status"""
+
     ACTIVE = "active"
     PAUSED = "paused"
     DELETED = "deleted"
@@ -57,12 +61,14 @@ class ScheduleStatus(str, Enum):
 
 class ReportType(str, Enum):
     """Report Types"""
+
     WEEKLY = "weekly"
     MONTHLY = "monthly"
 
 
 class ContentStatus(str, Enum):
     """Content Status in Notion"""
+
     DRAFT = "draft"
     PUBLISHED = "published"
     ARCHIVED = "archived"
@@ -70,6 +76,7 @@ class ContentStatus(str, Enum):
 
 class SlackCommandType(str, Enum):
     """Slack Command Types"""
+
     TIME = "time"
     ADD = "add"
     REMOVE = "remove"

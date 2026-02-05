@@ -4,85 +4,86 @@ Using Pydantic for validation and serialization
 """
 
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.domain.enums import (
     Category,
+    ContentStatus,
     Difficulty,
     ExecutionStatus,
-    ScheduleStatus,
-    ContentStatus,
     ReportType,
+    ScheduleStatus,
 )
 
 
 class ContentRecord(BaseModel):
     """Represents a generated content record"""
-    
-    id: Optional[int] = None
+
+    id: int | None = None
     title: str = Field(..., description="Content title")
     category: Category = Field(..., description="Content category")
     difficulty: Difficulty = Field(Difficulty.INTERMEDIATE, description="Difficulty level")
     summary: str = Field(..., description="Short summary for Slack")
     content: str = Field(..., description="Full content for Notion")
-    tags: List[str] = Field(default_factory=list, description="Content tags")
-    notion_page_id: Optional[str] = Field(None, description="Notion page ID")
-    notion_url: Optional[str] = Field(None, description="Notion page URL")
-    slack_ts: Optional[str] = Field(None, description="Slack message timestamp")
+    tags: list[str] = Field(default_factory=list, description="Content tags")
+    notion_page_id: str | None = Field(None, description="Notion page ID")
+    notion_url: str | None = Field(None, description="Notion page URL")
+    slack_ts: str | None = Field(None, description="Slack message timestamp")
     author: str = Field(..., description="Author name")
     status: ContentStatus = Field(ContentStatus.DRAFT, description="Content status")
     created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
     model_config = ConfigDict(use_enum_values=True)
 
 
 class Schedule(BaseModel):
     """Represents a schedule configuration"""
-    
-    id: Optional[int] = None
+
+    id: int | None = None
     time: str = Field(..., description="Schedule time (HH:MM)")
     status: ScheduleStatus = Field(ScheduleStatus.ACTIVE)
     created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
     model_config = ConfigDict(use_enum_values=True)
 
 
 class ExecutionLog(BaseModel):
     """Represents an execution log entry"""
-    
-    id: Optional[int] = None
-    schedule_id: Optional[int] = None
-    content_id: Optional[int] = None
+
+    id: int | None = None
+    schedule_id: int | None = None
+    content_id: int | None = None
     status: ExecutionStatus = Field(ExecutionStatus.PENDING)
     attempt_count: int = Field(0, description="Number of attempts")
-    error_message: Optional[str] = None
+    error_message: str | None = None
     started_at: datetime = Field(default_factory=datetime.now)
-    completed_at: Optional[datetime] = None
-    duration_ms: Optional[int] = Field(None, description="Execution duration in milliseconds")
+    completed_at: datetime | None = None
+    duration_ms: int | None = Field(None, description="Execution duration in milliseconds")
 
     model_config = ConfigDict(use_enum_values=True)
 
 
 class TopicRequest(BaseModel):
     """Represents a user-requested topic"""
-    
-    id: Optional[int] = None
+
+    id: int | None = None
     topic: str = Field(..., description="Requested topic")
     requested_by: str = Field(..., description="Requester name or ID")
     is_processed: bool = Field(False, description="Whether the topic has been processed")
-    content_id: Optional[int] = Field(None, description="Generated content ID if processed")
+    content_id: int | None = Field(None, description="Generated content ID if processed")
     created_at: datetime = Field(default_factory=datetime.now)
-    processed_at: Optional[datetime] = None
+    processed_at: datetime | None = None
 
     model_config = ConfigDict(use_enum_values=True)
 
 
 class ReportData(BaseModel):
     """Represents report data"""
-    
+
     report_type: ReportType
     period_start: datetime
     period_end: datetime
@@ -90,11 +91,11 @@ class ReportData(BaseModel):
     success_count: int = 0
     failed_count: int = 0
     retry_count: int = 0
-    category_distribution: dict = Field(default_factory=dict)
-    uncovered_categories: List[str] = Field(default_factory=list)
-    avg_duration_ms: Optional[float] = Field(None, description="Average execution duration")
-    min_duration_ms: Optional[int] = Field(None, description="Minimum execution duration")
-    max_duration_ms: Optional[int] = Field(None, description="Maximum execution duration")
+    category_distribution: dict[str, int] = Field(default_factory=dict)
+    uncovered_categories: list[str] = Field(default_factory=list)
+    avg_duration_ms: float | None = Field(None, description="Average execution duration")
+    min_duration_ms: int | None = Field(None, description="Minimum execution duration")
+    max_duration_ms: int | None = Field(None, description="Maximum execution duration")
     generated_at: datetime = Field(default_factory=datetime.now)
 
     model_config = ConfigDict(use_enum_values=True)
@@ -102,21 +103,21 @@ class ReportData(BaseModel):
 
 class SlackMessage(BaseModel):
     """Represents a Slack message to send"""
-    
+
     channel: str
     text: str
-    blocks: Optional[List[dict]] = None
-    thread_ts: Optional[str] = None
-    
+    blocks: list[dict[str, Any]] | None = None
+    thread_ts: str | None = None
+
 
 class NotionPage(BaseModel):
     """Represents a Notion page to create"""
-    
+
     database_id: str
     title: str
     category: str
     difficulty: str
-    tags: List[str]
+    tags: list[str]
     content: str
     summary: str
     author: str
@@ -130,19 +131,19 @@ class GeneratedContent(BaseModel):
     difficulty: Difficulty
     summary: str
     content: str = ""
-    tags: List[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
 
     model_config = ConfigDict(use_enum_values=True)
 
 
 class BotStatus(BaseModel):
     """Represents current bot status"""
-    
+
     is_running: bool = True
     is_paused: bool = False
-    active_schedules: List[str] = Field(default_factory=list)
-    next_execution: Optional[datetime] = None
+    active_schedules: list[str] = Field(default_factory=list)
+    next_execution: datetime | None = None
     total_generated: int = 0
-    last_execution: Optional[datetime] = None
-    last_error: Optional[str] = None
+    last_execution: datetime | None = None
+    last_error: str | None = None
     uptime_seconds: int = 0
