@@ -3,10 +3,8 @@ CS Topics Definition for Daily-Bot
 Contains all available topics organized by category
 """
 
-from typing import Dict, List, Optional
-
 # Category definitions with Korean and English names
-CATEGORIES: Dict[str, Dict[str, str]] = {
+CATEGORIES: dict[str, dict[str, str]] = {
     "network": {"ko": "네트워크", "en": "Network"},
     "os": {"ko": "운영체제", "en": "Operating System"},
     "algorithm": {"ko": "알고리즘", "en": "Algorithm"},
@@ -22,7 +20,7 @@ CATEGORIES: Dict[str, Dict[str, str]] = {
 }
 
 # Topics by category
-TOPICS: Dict[str, List[str]] = {
+TOPICS: dict[str, list[str]] = {
     "network": [
         "OSI 7계층과 TCP/IP 4계층",
         "TCP vs UDP 비교",
@@ -293,7 +291,7 @@ TOPICS: Dict[str, List[str]] = {
 }
 
 
-def get_all_topics() -> List[tuple]:
+def get_all_topics() -> list[tuple[str, str]]:
     """Get all topics with their categories"""
     result = []
     for category, topics in TOPICS.items():
@@ -302,7 +300,7 @@ def get_all_topics() -> List[tuple]:
     return result
 
 
-def get_topics_by_category(category: str) -> List[str]:
+def get_topics_by_category(category: str) -> list[str]:
     """Get topics for a specific category"""
     return TOPICS.get(category, [])
 
@@ -317,7 +315,7 @@ def get_total_topic_count() -> int:
     return sum(len(topics) for topics in TOPICS.values())
 
 
-def infer_category_from_topic(topic: str) -> Optional[str]:
+def infer_category_from_topic(topic: str) -> str | None:
     """
     Infer category from topic by matching against known topics
 
