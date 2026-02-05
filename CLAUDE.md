@@ -29,46 +29,77 @@ python main.py                  # Start the bot
 ### Prerequisites
 
 - Python 3.11+
-- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`, 인증 완료 상태)
-- Slack App (Bot Token + App Token + Signing Secret)
-- Notion Integration (API Key + Database ID)
-
-### 1. 의존성 설치
+- Node.js (Claude Code CLI 설치용)
 
 ```bash
+python --version          # 3.11 이상 확인
+npm install -g @anthropic-ai/claude-code
+claude --version          # CLI 설치 확인
+```
+
+### 1. 클론 및 의존성 설치
+
+```bash
+git clone https://github.com/jeonjuho23/claude-daily.git
+cd claude-daily
 pip install -r requirements.txt
 ```
 
-### 2. 환경 변수 설정
+### 2. 외부 서비스 설정
 
-`.env` 파일이 이미 있으면 건너뛰기. 없으면:
+**Slack App** (https://api.slack.com/apps)
+1. Create New App > From scratch
+2. **Socket Mode** 활성화 > App-Level Token 생성 (`xapp-`)
+3. **OAuth & Permissions** > Bot Token Scopes: `chat:write`, `commands`, `app_mentions:read`
+4. Install to Workspace > Bot Token 복사 (`xoxb-`)
+5. **Slash Commands** > `/daily-bot` 등록 (Request URL은 Socket Mode라 불필요)
+6. **Basic Information** > Signing Secret 복사
+7. 발행할 채널에 봇 초대: `/invite @daily-bot`
+8. 채널 ID 확인: 채널 우클릭 > 채널 세부정보 > 하단
+
+**Notion Integration** (https://www.notion.so/my-integrations)
+1. New integration > Internal integration > API Key 복사 (`secret_`)
+2. 데이터베이스 페이지에서 `...` > 연결 > 생성한 integration 추가
+3. 데이터베이스 URL에서 ID 추출: `notion.so/{DATABASE_ID}?v=...`
+
+### 3. 환경 변수 설정
 
 ```bash
 cp .env.example .env
-# .env 파일을 열어서 실제 값 입력
 ```
 
-필수 키:
-- `SLACK_BOT_TOKEN` - `xoxb-` 로 시작하는 봇 토큰
-- `SLACK_SIGNING_SECRET` - Slack App의 Signing Secret
-- `SLACK_APP_TOKEN` - `xapp-` 로 시작하는 App-Level Token (Socket Mode용)
-- `SLACK_CHANNEL_ID` - 발행 대상 채널 ID
-- `NOTION_API_KEY` - `secret_` 로 시작하는 Notion Integration 토큰
-- `NOTION_DATABASE_ID` - Notion 데이터베이스 ID
+`.env` 편집:
+```env
+SLACK_BOT_TOKEN=xoxb-실제토큰
+SLACK_SIGNING_SECRET=실제시크릿
+SLACK_APP_TOKEN=xapp-실제토큰
+SLACK_CHANNEL_ID=C실제채널ID
+NOTION_API_KEY=secret_실제키
+NOTION_DATABASE_ID=실제데이터베이스ID
+BOT_OWNER_NAME=본인이름
+DEFAULT_SCHEDULE_TIME=07:00
+TIMEZONE=Asia/Seoul
+```
 
-스케줄 설정 (선택):
-- `DEFAULT_SCHEDULE_TIME=07:00` - 매일 실행 시각 (기본 07:00)
-- `TIMEZONE=Asia/Seoul` - 타임존 (기본 Asia/Seoul)
-
-### 3. 실행
+### 4. 실행
 
 ```bash
 python main.py
 ```
 
+시작 시 health check 결과 표시:
+```
+Slack API: OK
+Notion API: OK
+Claude Code CLI: OK
+Daily-Bot is running. Press Ctrl+C to stop.
+```
+
+3개 모두 OK면 `DEFAULT_SCHEDULE_TIME`에 자동 실행. `/daily-bot now`으로 즉시 테스트 가능.
+
 이 프로세스는 **상시 실행(데몬)** 형태. APScheduler가 설정 시간에 자동으로 콘텐츠 생성/발행. Ctrl+C로 종료.
 
-### 4. 백그라운드 실행 (터미널 꺼도 유지)
+### 5. 백그라운드 실행 (터미널 꺼도 유지)
 
 **Windows (PowerShell):**
 ```powershell
@@ -98,7 +129,7 @@ WantedBy=multi-user.target
 sudo systemctl enable daily-bot && sudo systemctl start daily-bot
 ```
 
-### 5. 동작 확인
+### 6. 동작 확인
 
 - 로그: `logs/` 디렉토리에 자동 생성
 - Slack에서 `/daily-bot status` 명령으로 상태 확인
