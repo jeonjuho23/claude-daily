@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0] - 2026-02-06
+
+### Notion 통합 Optional화
+- `NOTION_API_KEY`, `NOTION_DATABASE_ID`를 Optional 필드로 변경
+- `settings.notion_enabled` 프로퍼티 추가 (두 값 모두 설정 시 True)
+- Notion 미설정 시 Slack만으로 봇이 정상 동작
+- `CoreEngine`, `ReportGenerator`에서 `notion_adapter` 파라미터 Optional화
+- Health check: Notion 미설정 시 `SKIPPED (not configured)` 표시
+
+### 테스트 개선
+- Settings 테스트에서 `.env.example` 사용하여 실제 `.env` 의존성 제거
+- `notion_enabled` 프로퍼티 테스트 5개 추가 (True, None, 빈 문자열, 양방향 partial)
+- Notion 없이 콘텐츠 발행 테스트 3개 추가 (engine)
+- Notion 없이 리포트 생성 테스트 3개 추가 (report_generator)
+- 총 288개 테스트 (전체 통과)
+
+### 문서
+- README.md, CLAUDE.md, daily-bot-architecture.md: Notion Optional 반영
+- `.env.example`: Notion 섹션 주석 처리
+
 ## [0.2.0] - 2026-02-05
 
 ### Notion API 마이그레이션
