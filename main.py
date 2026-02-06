@@ -45,7 +45,7 @@ async def main() -> None:
     repository = SQLiteRepository(db_path=str(settings.get_db_full_path()))
     generator = ClaudeCodeGenerator()
     slack_adapter = SlackAdapter()
-    notion_adapter = NotionAdapter()
+    notion_adapter = NotionAdapter() if settings.notion_enabled else None
     command_handler = CommandHandler()
 
     # Create engine
@@ -79,8 +79,12 @@ async def main() -> None:
         slack_healthy = await slack_adapter.health_check()
         logger.info(f"Slack API: {'OK' if slack_healthy else 'FAIL'}")
 
-        notion_healthy = await notion_adapter.health_check()
-        logger.info(f"Notion API: {'OK' if notion_healthy else 'FAIL'}")
+        if notion_adapter:
+            notion_healthy = await notion_adapter.health_check()
+            logger.info(f"Notion API: {'OK' if notion_healthy else 'FAIL'}")
+        else:
+            notion_healthy = True
+            logger.info("Notion API: SKIPPED (not configured)")
 
         claude_healthy = await generator.health_check()
         logger.info(f"Claude Code CLI: {'OK' if claude_healthy else 'FAIL'}")

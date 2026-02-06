@@ -36,7 +36,7 @@ class ReportGenerator:
         self,
         repository: ContentRepository,
         slack_adapter: SlackAdapter,
-        notion_adapter: NotionAdapter,
+        notion_adapter: NotionAdapter | None = None,
     ):
         """
         Initialize report generator
@@ -71,19 +71,24 @@ class ReportGenerator:
             period_end=period_end,
         )
 
-        # Create Notion page
-        try:
-            page_id, page_url = await self.notion.create_report_page(report)
+        if self.notion:
+            # Create Notion page
+            try:
+                page_id, page_url = await self.notion.create_report_page(report)
 
-            # Send Slack notification
-            await self.slack.send_report_notification(report, notion_url=page_url)
+                # Send Slack notification
+                await self.slack.send_report_notification(report, notion_url=page_url)
 
-            logger.info("Weekly report generated", page_id=page_id)
+                logger.info("Weekly report generated", page_id=page_id)
 
-        except Exception as e:
-            logger.error("Failed to create weekly report", error=str(e))
-            # Still send Slack notification without Notion link
+            except Exception as e:
+                logger.error("Failed to create weekly report", error=str(e))
+                # Still send Slack notification without Notion link
+                await self.slack.send_report_notification(report)
+        else:
+            # Notion not configured, send Slack only
             await self.slack.send_report_notification(report)
+            logger.info("Weekly report generated (Slack only)")
 
         return report
 
@@ -108,19 +113,24 @@ class ReportGenerator:
             period_end=period_end,
         )
 
-        # Create Notion page
-        try:
-            page_id, page_url = await self.notion.create_report_page(report)
+        if self.notion:
+            # Create Notion page
+            try:
+                page_id, page_url = await self.notion.create_report_page(report)
 
-            # Send Slack notification
-            await self.slack.send_report_notification(report, notion_url=page_url)
+                # Send Slack notification
+                await self.slack.send_report_notification(report, notion_url=page_url)
 
-            logger.info("Monthly report generated", page_id=page_id)
+                logger.info("Monthly report generated", page_id=page_id)
 
-        except Exception as e:
-            logger.error("Failed to create monthly report", error=str(e))
-            # Still send Slack notification without Notion link
+            except Exception as e:
+                logger.error("Failed to create monthly report", error=str(e))
+                # Still send Slack notification without Notion link
+                await self.slack.send_report_notification(report)
+        else:
+            # Notion not configured, send Slack only
             await self.slack.send_report_notification(report)
+            logger.info("Monthly report generated (Slack only)")
 
         return report
 

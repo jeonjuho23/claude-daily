@@ -59,7 +59,7 @@ class CoreEngine:
         repository: ContentRepository,
         generator: ContentGenerator,
         slack_adapter: SlackAdapter,
-        notion_adapter: NotionAdapter,
+        notion_adapter: NotionAdapter | None = None,
         command_handler: CommandHandler | None = None,
     ):
         """
@@ -350,13 +350,14 @@ class CoreEngine:
 
         # Create Notion page
         notion_ok = False
-        try:
-            page_id, page_url = await self.notion.create_content_page(content)
-            content.notion_page_id = page_id
-            content.notion_url = page_url
-            notion_ok = True
-        except Exception as e:
-            logger.warning("Failed to create Notion page", error=str(e))
+        if self.notion:
+            try:
+                page_id, page_url = await self.notion.create_content_page(content)
+                content.notion_page_id = page_id
+                content.notion_url = page_url
+                notion_ok = True
+            except Exception as e:
+                logger.warning("Failed to create Notion page", error=str(e))
 
         # Send Slack notification
         slack_ok = False

@@ -25,9 +25,9 @@ class Settings(BaseSettings):
     slack_channel_id: str = Field(..., description="Main channel for content")
     slack_report_channel_id: str | None = Field(None, description="Channel for reports")
 
-    # Notion Configuration
-    notion_api_key: str = Field(..., description="Notion Integration API Key")
-    notion_database_id: str = Field(..., description="Notion Database ID for content")
+    # Notion Configuration (Optional)
+    notion_api_key: str | None = Field(None, description="Notion Integration API Key")
+    notion_database_id: str | None = Field(None, description="Notion Database ID for content")
     notion_report_page_id: str | None = Field(None, description="Notion Page ID for reports")
 
     # Schedule Configuration
@@ -92,6 +92,11 @@ class Settings(BaseSettings):
     def report_channel(self) -> str:
         """Get report channel, fallback to main channel"""
         return self.slack_report_channel_id or self.slack_channel_id
+
+    @property
+    def notion_enabled(self) -> bool:
+        """Check if Notion integration is configured"""
+        return bool(self.notion_api_key and self.notion_database_id)
 
     def get_db_full_path(self) -> Path:
         """Get full path to database file"""
