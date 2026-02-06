@@ -105,6 +105,42 @@ class TestReportData:
         assert report.avg_duration_ms is None
 
 
+class TestReportsWithoutNotion:
+    """Tests for report generation when Notion is not configured"""
+
+    @pytest.fixture
+    def report_gen_no_notion(self, mock_repository, mock_slack_adapter):
+        return ReportGenerator(
+            repository=mock_repository,
+            slack_adapter=mock_slack_adapter,
+            notion_adapter=None,
+        )
+
+    @pytest.mark.asyncio
+    async def test_weekly_report_slack_only(self, report_gen_no_notion, mock_slack_adapter):
+        """Weekly report should send Slack notification without Notion"""
+        report = await report_gen_no_notion.generate_weekly_report()
+        assert isinstance(report, ReportData)
+        assert report.report_type == ReportType.WEEKLY.value
+        mock_slack_adapter.send_report_notification.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_monthly_report_slack_only(self, report_gen_no_notion, mock_slack_adapter):
+        """Monthly report should send Slack notification without Notion"""
+        report = await report_gen_no_notion.generate_monthly_report()
+        assert isinstance(report, ReportData)
+        assert report.report_type == ReportType.MONTHLY.value
+        mock_slack_adapter.send_report_notification.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_weekly_no_notion_url(self, report_gen_no_notion, mock_slack_adapter):
+        """Slack notification should be sent without notion_url when Notion is None"""
+        await report_gen_no_notion.generate_weekly_report()
+        call_args = mock_slack_adapter.send_report_notification.call_args
+        # Should be called with report only, no notion_url
+        assert call_args.kwargs.get("notion_url") is None
+
+
 class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_execution_stats(

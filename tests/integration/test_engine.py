@@ -240,6 +240,66 @@ class TestContentGeneration:
         assert final_log.duration_ms >= 0
 
 
+class TestContentGenerationWithoutNotion:
+    """Tests for content generation when Notion is not configured"""
+
+    @pytest.fixture
+    def engine_no_notion(self, mock_settings, mock_repository, mock_generator, mock_slack_adapter):
+        """Create CoreEngine without Notion adapter"""
+        from config.settings import get_settings
+
+        get_settings.cache_clear()
+
+        with patch("src.core.engine.AsyncIOScheduler") as MockScheduler:
+            scheduler_instance = MagicMock()
+            scheduler_instance.get_job.return_value = None
+            MockScheduler.return_value = scheduler_instance
+
+            from src.core.engine import CoreEngine
+
+            e = CoreEngine(
+                repository=mock_repository,
+                generator=mock_generator,
+                slack_adapter=mock_slack_adapter,
+                notion_adapter=None,
+            )
+            e.scheduler = scheduler_instance
+            yield e
+
+    @pytest.mark.asyncio
+    async def test_publish_without_notion(
+        self, engine_no_notion, mock_repository, mock_generator, mock_slack_adapter
+    ):
+        """Content should be published via Slack only when Notion is None"""
+        content = await engine_no_notion._generate_and_publish()
+        mock_generator.generate_random.assert_awaited_once()
+        mock_repository.save_content.assert_awaited()
+        mock_slack_adapter.send_content_notification.assert_awaited()
+        mock_repository.update_content.assert_awaited()
+
+    @pytest.mark.asyncio
+    async def test_publish_without_notion_status_published(
+        self, engine_no_notion, mock_repository, mock_slack_adapter
+    ):
+        """Content should be PUBLISHED when Slack succeeds and Notion is None"""
+        mock_slack_adapter.send_content_notification = AsyncMock(return_value="ts123")
+        content = await engine_no_notion._generate_and_publish()
+        update_call = mock_repository.update_content.call_args[0][0]
+        assert update_call.status == ContentStatus.PUBLISHED
+
+    @pytest.mark.asyncio
+    async def test_publish_without_notion_slack_fails_stays_draft(
+        self, engine_no_notion, mock_repository, mock_slack_adapter
+    ):
+        """Content should stay DRAFT when both Notion is None and Slack fails"""
+        mock_slack_adapter.send_content_notification = AsyncMock(
+            side_effect=Exception("Slack fail")
+        )
+        content = await engine_no_notion._generate_and_publish()
+        update_call = mock_repository.update_content.call_args[0][0]
+        assert update_call.status == ContentStatus.DRAFT
+
+
 class TestCommandHandlers:
     @pytest.mark.asyncio
     async def test_time_command_updates_existing(self, engine, mock_repository):
