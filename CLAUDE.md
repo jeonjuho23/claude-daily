@@ -57,7 +57,8 @@ pip install -r requirements.txt
 7. 발행할 채널에 봇 초대: `/invite @daily-bot`
 8. 채널 ID 확인: 채널 우클릭 > 채널 세부정보 > 하단
 
-**Notion Integration** (https://www.notion.so/my-integrations)
+**Notion Integration (Optional)** (https://www.notion.so/my-integrations)
+Notion 설정 없이도 Slack만으로 봇이 정상 동작합니다. Notion에 콘텐츠/리포트를 기록하려면:
 1. New integration > Internal integration > API Key 복사 (`secret_`)
 2. 데이터베이스 페이지에서 `...` > 연결 > 생성한 integration 추가
 3. 데이터베이스 URL에서 ID 추출: `notion.so/{DATABASE_ID}?v=...`
@@ -74,11 +75,13 @@ SLACK_BOT_TOKEN=xoxb-실제토큰
 SLACK_SIGNING_SECRET=실제시크릿
 SLACK_APP_TOKEN=xapp-실제토큰
 SLACK_CHANNEL_ID=C실제채널ID
-NOTION_API_KEY=secret_실제키
-NOTION_DATABASE_ID=실제데이터베이스ID
 BOT_OWNER_NAME=본인이름
 DEFAULT_SCHEDULE_TIME=07:00
 TIMEZONE=Asia/Seoul
+
+# Optional: Notion 연동 시 설정
+# NOTION_API_KEY=secret_실제키
+# NOTION_DATABASE_ID=실제데이터베이스ID
 ```
 
 ### 4. 실행
@@ -90,12 +93,12 @@ python main.py
 시작 시 health check 결과 표시:
 ```
 Slack API: OK
-Notion API: OK
+Notion API: OK (또는 SKIPPED (not configured))
 Claude Code CLI: OK
 Daily-Bot is running. Press Ctrl+C to stop.
 ```
 
-3개 모두 OK면 `DEFAULT_SCHEDULE_TIME`에 자동 실행. `/daily-bot now`으로 즉시 테스트 가능.
+Slack/Claude 2개 OK면 `DEFAULT_SCHEDULE_TIME`에 자동 실행. Notion 미설정 시 SKIPPED 표시되며 Slack만으로 정상 동작. `/daily-bot now`으로 즉시 테스트 가능.
 
 이 프로세스는 **상시 실행(데몬)** 형태. APScheduler가 설정 시간에 자동으로 콘텐츠 생성/발행. Ctrl+C로 종료.
 
@@ -166,7 +169,7 @@ main.py                         # Entry point: component initialization, lifecyc
 
 - `config/settings.py` - Pydantic-based settings from environment variables
 - `config/topics.py` - 240+ CS topics across 12 categories with difficulty weights
-- `.env` - Required: SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, SLACK_APP_TOKEN, SLACK_CHANNEL_ID, NOTION_API_KEY, NOTION_DATABASE_ID
+- `.env` - Required: SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, SLACK_APP_TOKEN, SLACK_CHANNEL_ID / Optional: NOTION_API_KEY, NOTION_DATABASE_ID
 
 ## Domain Models
 

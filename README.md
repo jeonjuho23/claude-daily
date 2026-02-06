@@ -2,14 +2,14 @@
 
 개발자를 위한 자동화된 CS 지식 공유 봇
 
-매일 정해진 시간에 Claude Code를 활용하여 CS(Computer Science) 관련 학습 콘텐츠를 자동으로 생성하고, Slack과 Notion에 게시합니다.
+매일 정해진 시간에 Claude Code를 활용하여 CS(Computer Science) 관련 학습 콘텐츠를 자동으로 생성하고, Slack에 게시합니다. Notion 연동은 선택 사항입니다.
 
 ## ✨ 주요 기능
 
 - **자동 콘텐츠 생성**: Claude Code CLI를 활용한 고품질 CS 지식 콘텐츠 생성
 - **다중 플랫폼 지원**: Windows와 macOS 모두 지원
 - **Slack 연동**: 요약 내용 및 링크 자동 게시, 슬래시 명령어 지원
-- **Notion 연동**: 요약 콘텐츠 페이지 자동 생성 (callout 블록)
+- **Notion 연동 (Optional)**: 요약 콘텐츠 페이지 자동 생성 (callout 블록)
 - **스케줄 관리**: 다중 스케줄 설정, 일시정지/재개
 - **절전 모드 해제**: Windows Task Scheduler / macOS launchd를 통한 자동 실행
 - **재시도 로직**: 실패 시 점진적 재시도 (5회, 5분 단위 증가)
@@ -56,7 +56,7 @@ daily-bot/
 - Python 3.11 이상
 - Node.js (Claude Code CLI 설치용)
 - Slack 워크스페이스 관리 권한
-- Notion Integration 생성 권한
+- Notion Integration 생성 권한 (Optional)
 
 ### 1. 클론 및 의존성 설치
 
@@ -89,7 +89,9 @@ claude --version   # 설치 확인
 7. 발행할 Slack 채널에서 봇 초대: `/invite @앱이름`
 8. 채널 ID 확인: 채널명 우클릭 > 채널 세부정보 > 하단의 채널 ID
 
-### 3. Notion 설정
+### 3. Notion 설정 (Optional)
+
+Notion 설정 없이도 Slack만으로 봇이 정상 동작합니다. Notion에 콘텐츠/리포트를 기록하려면:
 
 [Notion Integrations](https://www.notion.so/my-integrations)에서 Integration을 생성합니다.
 
@@ -114,14 +116,14 @@ SLACK_SIGNING_SECRET=실제시크릿
 SLACK_APP_TOKEN=xapp-실제토큰
 SLACK_CHANNEL_ID=C실제채널ID
 
-# Notion (필수)
-NOTION_API_KEY=secret_실제키
-NOTION_DATABASE_ID=실제데이터베이스ID
-
 # 봇 설정
 BOT_OWNER_NAME=본인이름
 DEFAULT_SCHEDULE_TIME=07:00
 TIMEZONE=Asia/Seoul
+
+# Notion (Optional - 설정 시 Notion 연동 활성화)
+# NOTION_API_KEY=secret_실제키
+# NOTION_DATABASE_ID=실제데이터베이스ID
 ```
 
 전체 설정 항목은 `.env.example` 참조.
@@ -136,12 +138,12 @@ python main.py
 
 ```
 Slack API: OK
-Notion API: OK
+Notion API: OK (또는 SKIPPED (not configured))
 Claude Code CLI: OK
 Daily-Bot is running. Press Ctrl+C to stop.
 ```
 
-3개 모두 OK면 정상. `DEFAULT_SCHEDULE_TIME`에 자동으로 콘텐츠 생성/발행됩니다.
+Slack/Claude OK면 정상. Notion 미설정 시 SKIPPED 표시되며 Slack만으로 동작합니다. `DEFAULT_SCHEDULE_TIME`에 자동으로 콘텐츠 생성/발행됩니다.
 
 > **중요**: `python main.py`는 한번 실행하고 끝나는 스크립트가 아닙니다.
 > APScheduler가 내장된 **상시 실행 프로세스(데몬)** 로, 프로세스가 살아있는 동안 설정 시간에 자동 실행됩니다.
